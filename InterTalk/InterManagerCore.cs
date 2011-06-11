@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Reflection;
 
 namespace InterTalk
 {
@@ -19,8 +18,7 @@ namespace InterTalk
 
         private InterManagerCore() 
         {
-            conditions = new List<Dictionary<String, List<Tuple<object,MethodInfo>>>>();
-            conditionParams = new List<Dictionary<string, object[][]>>();
+            conditions = new List<Dictionary<string, List<Tuple<Delegate,object[]>>>>();
             safetyBox = new List<Dictionary<string, object>>();
         }
 
@@ -40,12 +38,7 @@ namespace InterTalk
         /// <summary>
         /// List that contains all the different conditions in different layers (for multi-purpose event handling)
         /// </summary>
-        private List<Dictionary<String, List<Tuple<object,MethodInfo>>>> conditions;
-
-        /// <summary>
-        /// List that contains all the parameters for every method that registered in the conditions.
-        /// </summary>
-        private List<Dictionary<String,object[][]>> conditionParams;
+        private List<Dictionary<String, List<Tuple<Delegate,object[]>>>> conditions;
 
         /// <summary>
         /// List that contains a "safety box" for the invoked methods to communicate some important data to the registered methods.
@@ -64,20 +57,19 @@ namespace InterTalk
         /// <param name="handler">Callback method (delegate) when the event is fired.</param>
         /// <param name="args">Array of objects for the delegate method parameters.</param>
         /// <returns>Returns an int representing the ID of the registered listener. (Required to unregister a listener).</returns>
-        public int Register(int depth, String condition, object instance, MethodInfo handler, params object[] args)
+        public int Register(int depth, String condition, Delegate handler, params object[] args)
         {
-            Tuple<object,MethodInfo> tp = new Tuple<object,MethodInfo>(instance,handler);
+            Tuple<Delegate,object[]> tp = new Tuple<Delegate,object[]>(handler,args);
+
             while (conditions.Count <= depth)
             {
-                conditions.Add(new Dictionary<String, List<Tuple<object,MethodInfo>>>());
-                conditionParams.Add(new Dictionary<string, object[][]>());
+                conditions.Add(new Dictionary<String, List<Tuple<Delegate,object[]>>>());
                 safetyBox.Add(new Dictionary<string, object>());
             }
 
             if (!conditions[depth].ContainsKey(condition))
             {
-                conditions[depth][condition] = new List<Tuple<object,MethodInfo>>();
-                conditionParams[depth][condition] = new object[100][];
+                conditions[depth][condition] = new List<Tuple<Delegate,object[]>>();
                 safetyBox[depth] = new Dictionary<string, object>();
             }
 
@@ -89,11 +81,9 @@ namespace InterTalk
             else
             {
                 conditions[depth][condition].Add(tp);
-                id = conditions[depth][condition].IndexOf(tp);
+                id = conditions[depth][condition].LastIndexOf(tp);
             }
             
-            conditionParams[depth][condition][id] = args;
-
             return id;
         }
 
@@ -124,12 +114,10 @@ namespace InterTalk
         public void Invoke(int depth, String condition, object message)
         {
             safetyBox[depth][condition] = message;
-            foreach (Tuple<object,MethodInfo> tp in conditions[depth][condition])
+            foreach(Tuple<Delegate,object[]> tp in conditions[depth][condition])
             {
-                if (tp != null)
-                {   
-                    tp.Item2.Invoke(tp.Item1, conditionParams[depth][condition][conditions[depth][condition].IndexOf(tp)]);
-                }
+                if(tp != null)
+                    tp.Item1.DynamicInvoke(tp.Item2);
                 
             }
             safetyBox[depth][condition] = null;
@@ -144,7 +132,6 @@ namespace InterTalk
         public void Unregister(int depth, String condition, int ID)
         {
             conditions[depth][condition][ID] = null;
-            conditionParams[depth][condition][ID] = null;
         }
 
         /// <summary>
