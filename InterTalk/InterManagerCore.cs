@@ -13,16 +13,15 @@ namespace InterTalk
     public sealed class InterManagerCore
     {
 
-        ////TODO - Adding a way to handle checking for the instance that fired the event.
-
         #region Singleton Implementation
 
         private static readonly InterManagerCore instance = new InterManagerCore();
 
         private InterManagerCore() 
         {
-            conditions = new List<Dictionary<string, List<Delegate>>>();
+            conditions = new List<Dictionary<String, List<Tuple<object,MethodInfo>>>>();
             conditionParams = new List<Dictionary<string, object[][]>>();
+            safetyBox = new List<Dictionary<string, object>>();
         }
 
         public static InterManagerCore Instance
@@ -41,9 +40,17 @@ namespace InterTalk
         /// <summary>
         /// List that contains all the different conditions in different layers (for multi-purpose event handling)
         /// </summary>
-        private List<Dictionary<String, List<Delegate>>> conditions;
+        private List<Dictionary<String, List<Tuple<object,MethodInfo>>>> conditions;
 
+        /// <summary>
+        /// List that contains all the parameters for every method that registered in the conditions.
+        /// </summary>
         private List<Dictionary<String,object[][]>> conditionParams;
+
+        /// <summary>
+        /// List that contains a "safety box" for the invoked methods to communicate some important data to the registered methods.
+        /// </summary>
+        private List<Dictionary<String, object>> safetyBox;
 
         #endregion
 
@@ -57,28 +64,32 @@ namespace InterTalk
         /// <param name="handler">Callback method (delegate) when the event is fired.</param>
         /// <param name="args">Array of objects for the delegate method parameters.</param>
         /// <returns>Returns an int representing the ID of the registered listener. (Required to unregister a listener).</returns>
-        public int Register(int depth, String condition, Delegate handler, params object[] args)
+        public int Register(int depth, String condition, object instance, MethodInfo handler, params object[] args)
         {
+            Tuple<object,MethodInfo> tp = new Tuple<object,MethodInfo>(instance,handler);
             while (conditions.Count <= depth)
             {
-                conditions.Add(new Dictionary<String, List<Delegate>>());
+                conditions.Add(new Dictionary<String, List<Tuple<object,MethodInfo>>>());
                 conditionParams.Add(new Dictionary<string, object[][]>());
+                safetyBox.Add(new Dictionary<string, object>());
             }
 
             if (!conditions[depth].ContainsKey(condition))
             {
-                conditions[depth][condition] = new List<Delegate>();
+                conditions[depth][condition] = new List<Tuple<object,MethodInfo>>();
                 conditionParams[depth][condition] = new object[100][];
+                safetyBox[depth] = new Dictionary<string, object>();
             }
+
             int id;
             if((id = ObtainFirstNullID(depth,condition)) != -1)
             {
-                conditions[depth][condition][id] = handler;
+                conditions[depth][condition][id] = tp;
             }
             else
             {
-                conditions[depth][condition].Add(handler);
-                id = conditions[depth][condition].IndexOf(handler);
+                conditions[depth][condition].Add(tp);
+                id = conditions[depth][condition].IndexOf(tp);
             }
             
             conditionParams[depth][condition][id] = args;
@@ -109,13 +120,19 @@ namespace InterTalk
         /// </summary>
         /// <param name="depth">Level of depth for the layer for the invoked event.</param>
         /// <param name="condition">Condition for the invoked event.</param>
-        public void Invoke(int depth, String condition)
+        /// <param name="message">Extra messages the invoker wants to make the subscribers aware of.</param>
+        public void Invoke(int depth, String condition, object message)
         {
-            foreach(Delegate d in conditions[depth][condition])
+            safetyBox[depth][condition] = message;
+            foreach (Tuple<object,MethodInfo> tp in conditions[depth][condition])
             {
-                if(d != null)
-                    d.DynamicInvoke(conditionParams[depth][condition][conditions[depth][condition].IndexOf(d)]);
+                if (tp != null)
+                {   
+                    tp.Item2.Invoke(tp.Item1, conditionParams[depth][condition][conditions[depth][condition].IndexOf(tp)]);
+                }
+                
             }
+            safetyBox[depth][condition] = null;
         }
 
         /// <summary>
@@ -128,6 +145,17 @@ namespace InterTalk
         {
             conditions[depth][condition][ID] = null;
             conditionParams[depth][condition][ID] = null;
+        }
+
+        /// <summary>
+        /// This method returns the safety box related to a certain condition in a certain layer.
+        /// </summary>
+        /// <param name="depth">The layer number.</param>
+        /// <param name="condition">The string condition of the registered event.</param>
+        /// <returns>Returns the message stored in the safety box. Always returns null if this method is called outside a fired event.</returns>
+        public object MySafetyBox(int depth, String condition)
+        {
+            return safetyBox[depth][condition];
         }
 
         #endregion
