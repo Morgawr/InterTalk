@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterTalk", "InterTalk\Inte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITTest", "ITTest\ITTest.csproj", "{1F9C5310-D33F-462A-9F6D-A9C8BFADF178}"
 EndProject
+Project("{F088123C-0E9E-452A-89E6-6BA2F21D5CAC}") = "ArchitectureAnalysis", "ArchitectureAnalysis\ArchitectureAnalysis.modelproj", "{4ED48809-68C5-4067-8774-21B2B2D878EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,16 @@ Global
 		{1F9C5310-D33F-462A-9F6D-A9C8BFADF178}.Release|Mixed Platforms.Build.0 = Release|x86
 		{1F9C5310-D33F-462A-9F6D-A9C8BFADF178}.Release|x86.ActiveCfg = Release|x86
 		{1F9C5310-D33F-462A-9F6D-A9C8BFADF178}.Release|x86.Build.0 = Release|x86
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4ED48809-68C5-4067-8774-21B2B2D878EE}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

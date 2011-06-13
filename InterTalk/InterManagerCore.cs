@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace InterTalk
 {
@@ -111,16 +112,40 @@ namespace InterTalk
         /// <param name="depth">Level of depth for the layer for the invoked event.</param>
         /// <param name="condition">Condition for the invoked event.</param>
         /// <param name="message">Extra messages the invoker wants to make the subscribers aware of.</param>
-        public void Invoke(int depth, String condition, object message)
+        /// <param name="multiThreaded">A boolean that checks if the manager should optimize the event call using multi-threading.</param>
+        public void Invoke(int depth, String condition, object message, bool multiThreaded)
         {
             safetyBox[depth][condition] = message;
-            foreach(Tuple<Delegate,object[]> tp in conditions[depth][condition])
+
+            if (multiThreaded)
             {
-                if(tp != null)
-                    tp.Item1.DynamicInvoke(tp.Item2);
-                
+                Parallel.ForEach(conditions[depth][condition], tp =>
+                    {
+                        if (tp != null)
+                            tp.Item1.DynamicInvoke(tp.Item2);
+                    });
+            }
+            else
+            {
+                foreach (Tuple<Delegate, object[]> tp in conditions[depth][condition])
+                {
+                    if (tp != null)
+                        tp.Item1.DynamicInvoke(tp.Item2);
+
+                }
             }
             safetyBox[depth][condition] = null;
+        }
+
+        /// <summary>
+        /// This method fires the event for all the callbacks registered to a certain event without using multithreading.
+        /// </summary>
+        /// <param name="depth">Level of depth for the layer for the invoked event.</param>
+        /// <param name="condition">Condition for the invoked event.</param>
+        /// <param name="message">Extra messages the invoker wants to make the subscribers aware of.</param>
+        public void Invoke(int depth, String condition, object message)
+        {
+            Invoke(depth, condition, message, false);
         }
 
         /// <summary>
@@ -143,6 +168,38 @@ namespace InterTalk
         public object MySafetyBox(int depth, String condition)
         {
             return safetyBox[depth][condition];
+        }
+
+
+        /// <summary>
+        /// Gets the number of registered methods to this event.
+        /// </summary>
+        /// <param name="depth">The depth of the layer.</param>
+        /// <param name="condition">The condition of the event.</param>
+        /// <returns>The number of items subscribed.</returns>
+        public int GetRegistered(int depth, String condition)
+        {
+            return conditions[depth][condition].Count;
+        }
+
+        /// <summary>
+        /// Resets the instance.
+        /// </summary>
+        public void Reset()
+        {
+            conditions = new List<Dictionary<string, List<Tuple<Delegate, object[]>>>>();
+            safetyBox = new List<Dictionary<string, object>>();
+        }
+
+        /// <summary>
+        /// Resets the instance at a certain event removing all the subscribed methods.
+        /// </summary>
+        /// <param name="depth">The depth of the layer.</param>
+        /// <param name="condition">The condition of the event.</param>
+        public void Reset(int depth, String condition)
+        {
+            conditions[depth][condition] = new List<Tuple<Delegate, object[]>>();
+            safetyBox[depth][condition] = null;
         }
 
         #endregion
