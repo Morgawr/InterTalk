@@ -94,7 +94,7 @@ namespace InterTalk
         /// </summary>
         /// <param name="depth">The layer number for the condition we need.</param>
         /// <param name="condition">The condition we are going to check.</param>
-        /// <returns></returns>
+        /// <returns>The ID value.</returns>
         private int ObtainFirstNullID(int depth, string condition)
         {
             for (int i = 0; i < conditions[depth][condition].Count; i++)
@@ -113,8 +113,12 @@ namespace InterTalk
         /// <param name="condition">Condition for the invoked event.</param>
         /// <param name="message">Extra messages the invoker wants to make the subscribers aware of.</param>
         /// <param name="multiThreaded">A boolean that checks if the manager should optimize the event call using multi-threading.</param>
-        public void Invoke(int depth, String condition, object message, bool multiThreaded)
+        /// <returns>False if there were problems, else true.</returns>
+        public bool Invoke(int depth, String condition, object message, bool multiThreaded)
         {
+            if (depth >= safetyBox.Count || !safetyBox[depth].ContainsKey(condition))
+                return false;
+
             safetyBox[depth][condition] = message;
 
             if (multiThreaded)
@@ -135,6 +139,7 @@ namespace InterTalk
                 }
             }
             safetyBox[depth][condition] = null;
+            return true;
         }
 
         /// <summary>
@@ -143,9 +148,10 @@ namespace InterTalk
         /// <param name="depth">Level of depth for the layer for the invoked event.</param>
         /// <param name="condition">Condition for the invoked event.</param>
         /// <param name="message">Extra messages the invoker wants to make the subscribers aware of.</param>
-        public void Invoke(int depth, String condition, object message)
+        /// <returns>False if there were problems, else true.</returns>
+        public bool Invoke(int depth, String condition, object message)
         {
-            Invoke(depth, condition, message, false);
+            return Invoke(depth, condition, message, false);
         }
 
         /// <summary>
@@ -179,6 +185,8 @@ namespace InterTalk
         /// <returns>The number of items subscribed.</returns>
         public int GetRegistered(int depth, String condition)
         {
+            if (depth >= conditions.Count)
+                return 0;
             return conditions[depth][condition].Count;
         }
 
@@ -198,8 +206,22 @@ namespace InterTalk
         /// <param name="condition">The condition of the event.</param>
         public void Reset(int depth, String condition)
         {
+            if (depth >= conditions.Count || !conditions[depth].ContainsKey(condition))
+                return;
             conditions[depth][condition] = new List<Tuple<Delegate, object[]>>();
             safetyBox[depth][condition] = null;
+        }
+
+        /// <summary>
+        /// Resets the instance at a certain depth level.
+        /// </summary>
+        /// <param name="depth">The depth of the layer.</param>
+        public void Reset(int depth)
+        {
+            if (depth >= conditions.Count)
+                return;
+            conditions[depth] = new Dictionary<string, List<Tuple<Delegate, object[]>>>();
+            safetyBox[depth] = new Dictionary<string, object>();
         }
 
         #endregion

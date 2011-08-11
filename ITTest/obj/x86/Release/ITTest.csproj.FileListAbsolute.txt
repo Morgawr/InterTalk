@@ -1,0 +1,8 @@
+E:\Morgawr\CS Projects\InterTalk\ITTest\obj\x86\Release\ResolveAssemblyReference.cache
+E:\Morgawr\CS Projects\InterTalk\ITTest\bin\Release\ITTest.exe
+E:\Morgawr\CS Projects\InterTalk\ITTest\bin\Release\ITTest.pdb
+E:\Morgawr\CS Projects\InterTalk\ITTest\bin\Release\InterTalk.dll
+E:\Morgawr\CS Projects\InterTalk\ITTest\bin\Release\InterTalk.pdb
+E:\Morgawr\CS Projects\InterTalk\ITTest\obj\x86\Release\ITTest.exe
+E:\Morgawr\CS Projects\InterTalk\ITTest\obj\x86\Release\ITTest.pdb
+E:\Morgawr\CS Projects\InterTalk\ITTest\bin\Release\InterTalk.xml

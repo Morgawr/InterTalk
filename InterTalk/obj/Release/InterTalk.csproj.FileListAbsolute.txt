@@ -1,0 +1,5 @@
+E:\Morgawr\CS Projects\InterTalk\InterTalk\bin\Release\InterTalk.dll
+E:\Morgawr\CS Projects\InterTalk\InterTalk\bin\Release\InterTalk.pdb
+E:\Morgawr\CS Projects\InterTalk\InterTalk\obj\Release\ResolveAssemblyReference.cache
+E:\Morgawr\CS Projects\InterTalk\InterTalk\obj\Release\InterTalk.dll
+E:\Morgawr\CS Projects\InterTalk\InterTalk\obj\Release\InterTalk.pdb

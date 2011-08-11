@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>InterTalk</name>
+    </assembly>
+    <members>
+        <member name="T:InterTalk.InterManagerCore">
+            <summary>
+            This class is the singleton interface for the event manager core. Every class that wants to subscribe to a certain event has to register to
+            this manager, every class firing a condition/event has to talk through this class.
+            </summary>
+        </member>
+        <member name="F:InterTalk.InterManagerCore.conditions">
+            <summary>
+            List that contains all the different conditions in different layers (for multi-purpose event handling)
+            </summary>
+        </member>
+        <member name="F:InterTalk.InterManagerCore.safetyBox">
+            <summary>
+            List that contains a "safety box" for the invoked methods to communicate some important data to the registered methods.
+            </summary>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.Register(System.Int32,System.String,System.Delegate,System.Object[])">
+            <summary>
+            This method registers a new listener to a certain event with certain parameters as a callback function
+            </summary>
+            <param name="depth">Depth of the layer, multiple layers with same condition keys can be registered.</param>
+            <param name="condition">String name for the conditon/event to listen to.</param>
+            <param name="handler">Callback method (delegate) when the event is fired.</param>
+            <param name="args">Array of objects for the delegate method parameters.</param>
+            <returns>Returns an int representing the ID of the registered listener. (Required to unregister a listener).</returns>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.ObtainFirstNullID(System.Int32,System.String)">
+            <summary>
+            Obtains the first null ID in the conditions list.
+            </summary>
+            <param name="depth">The layer number for the condition we need.</param>
+            <param name="condition">The condition we are going to check.</param>
+            <returns>The ID value.</returns>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.Invoke(System.Int32,System.String,System.Object,System.Boolean)">
+            <summary>
+            This method fires the event for all the callbacks registered to a certain event.
+            </summary>
+            <param name="depth">Level of depth for the layer for the invoked event.</param>
+            <param name="condition">Condition for the invoked event.</param>
+            <param name="message">Extra messages the invoker wants to make the subscribers aware of.</param>
+            <param name="multiThreaded">A boolean that checks if the manager should optimize the event call using multi-threading.</param>
+            <returns>False if there were problems, else true.</returns>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.Invoke(System.Int32,System.String,System.Object)">
+            <summary>
+            This method fires the event for all the callbacks registered to a certain event without using multithreading.
+            </summary>
+            <param name="depth">Level of depth for the layer for the invoked event.</param>
+            <param name="condition">Condition for the invoked event.</param>
+            <param name="message">Extra messages the invoker wants to make the subscribers aware of.</param>
+            <returns>False if there were problems, else true.</returns>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.Unregister(System.Int32,System.String,System.Int32)">
+            <summary>
+            This method unregisters a listener's callback method from a certain condition.
+            </summary>
+            <param name="depth">Level of depth for the layer of the condition.</param>
+            <param name="condition">Condition the listener wants to stop listening.</param>
+            <param name="ID">ID of the listener.</param>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.MySafetyBox(System.Int32,System.String)">
+            <summary>
+            This method returns the safety box related to a certain condition in a certain layer.
+            </summary>
+            <param name="depth">The layer number.</param>
+            <param name="condition">The string condition of the registered event.</param>
+            <returns>Returns the message stored in the safety box. Always returns null if this method is called outside a fired event.</returns>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.GetRegistered(System.Int32,System.String)">
+            <summary>
+            Gets the number of registered methods to this event.
+            </summary>
+            <param name="depth">The depth of the layer.</param>
+            <param name="condition">The condition of the event.</param>
+            <returns>The number of items subscribed.</returns>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.Reset">
+            <summary>
+            Resets the instance.
+            </summary>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.Reset(System.Int32,System.String)">
+            <summary>
+            Resets the instance at a certain event removing all the subscribed methods.
+            </summary>
+            <param name="depth">The depth of the layer.</param>
+            <param name="condition">The condition of the event.</param>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.Reset(System.Int32)">
+            <summary>
+            Resets the instance at a certain depth level.
+            </summary>
+            <param name="depth">The depth of the layer.</param>
+        </member>
+    </members>
+</doc>
