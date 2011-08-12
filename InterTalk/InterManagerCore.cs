@@ -21,8 +21,12 @@ namespace InterTalk
         {
             conditions = new List<Dictionary<string, List<Tuple<Delegate,object[]>>>>();
             safetyBox = new List<Dictionary<string, object>>();
+            toRemove = new List<Tuple<int, string>>();
         }
 
+        /// <summary>
+        /// Instance of the singleton.
+        /// </summary>
         public static InterManagerCore Instance
         {
             get
@@ -45,6 +49,27 @@ namespace InterTalk
         /// List that contains a "safety box" for the invoked methods to communicate some important data to the registered methods.
         /// </summary>
         private List<Dictionary<String, object>> safetyBox;
+
+        /// <summary>
+        /// List of conditions to remove from the instance after Invoke has finished.
+        /// </summary>
+        private List<Tuple<int, string>> toRemove;
+
+        /// <summary>
+        /// Value to check if the instance is invoking any condition or not.
+        /// </summary>
+        private bool isInvoking = false;
+
+        /// <summary>
+        /// Value to check if the instance is invoking any condition or not.
+        /// </summary>
+        public bool IsInvoking
+        {
+            get
+            {
+                return isInvoking;
+            }
+        }
 
         #endregion
 
@@ -119,6 +144,8 @@ namespace InterTalk
             if (depth >= safetyBox.Count || !safetyBox[depth].ContainsKey(condition))
                 return false;
 
+            isInvoking = true;
+
             safetyBox[depth][condition] = message;
 
             if (multiThreaded)
@@ -138,7 +165,15 @@ namespace InterTalk
 
                 }
             }
+            
             safetyBox[depth][condition] = null;
+            isInvoking = false;
+
+            foreach (Tuple<int, string> T in toRemove)
+                realReset(T.Item1, T.Item2);
+
+            toRemove.Clear();
+
             return true;
         }
 
@@ -185,7 +220,7 @@ namespace InterTalk
         /// <returns>The number of items subscribed.</returns>
         public int GetRegistered(int depth, String condition)
         {
-            if (depth >= conditions.Count)
+            if (depth >= conditions.Count || !conditions[depth].ContainsKey(condition))
                 return 0;
             return conditions[depth][condition].Count;
         }
@@ -195,8 +230,10 @@ namespace InterTalk
         /// </summary>
         public void Reset()
         {
-            conditions = new List<Dictionary<string, List<Tuple<Delegate, object[]>>>>();
-            safetyBox = new List<Dictionary<string, object>>();
+            if (IsInvoking)
+                toRemove.Add(new Tuple<int, string>(-1, ""));
+            else
+                realReset(-1, String.Empty);
         }
 
         /// <summary>
@@ -208,8 +245,11 @@ namespace InterTalk
         {
             if (depth >= conditions.Count || !conditions[depth].ContainsKey(condition))
                 return;
-            conditions[depth][condition] = new List<Tuple<Delegate, object[]>>();
-            safetyBox[depth][condition] = null;
+
+            if (IsInvoking)
+                toRemove.Add(new Tuple<int, string>(depth, condition));
+            else
+                realReset(depth, condition);
         }
 
         /// <summary>
@@ -220,8 +260,36 @@ namespace InterTalk
         {
             if (depth >= conditions.Count)
                 return;
-            conditions[depth] = new Dictionary<string, List<Tuple<Delegate, object[]>>>();
-            safetyBox[depth] = new Dictionary<string, object>();
+            
+            if(IsInvoking)
+                toRemove.Add(new Tuple<int,string>(depth,String.Empty));
+            else
+                realReset(depth,String.Empty);
+        }
+
+        /// <summary>
+        /// Real reset method, after being filtered by the public mask.
+        /// </summary>
+        /// <param name="depth">The level of depth in the condition tree, if -1 it means any.</param>
+        /// <param name="condition">The condition for the level of depth, if String.Empty it means any.</param>
+        private void realReset(int depth, String condition)
+        {
+            if (depth == -1)
+            {
+                conditions = new List<Dictionary<string, List<Tuple<Delegate, object[]>>>>();
+                safetyBox = new List<Dictionary<string, object>>();
+                return;
+            }
+
+            if (condition == String.Empty)
+            {
+                conditions[depth] = new Dictionary<string, List<Tuple<Delegate, object[]>>>();
+                safetyBox[depth] = new Dictionary<string, object>();
+                return;
+            }
+
+            conditions[depth][condition] = new List<Tuple<Delegate, object[]>>();
+            safetyBox[depth][condition] = null;
         }
 
         #endregion

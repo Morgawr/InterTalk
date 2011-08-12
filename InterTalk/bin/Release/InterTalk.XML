@@ -20,6 +20,16 @@
             List that contains a "safety box" for the invoked methods to communicate some important data to the registered methods.
             </summary>
         </member>
+        <member name="F:InterTalk.InterManagerCore.toRemove">
+            <summary>
+            List of conditions to remove from the instance after Invoke has finished.
+            </summary>
+        </member>
+        <member name="F:InterTalk.InterManagerCore.isInvoking">
+            <summary>
+            Value to check if the instance is invoking any condition or not.
+            </summary>
+        </member>
         <member name="M:InterTalk.InterManagerCore.Register(System.Int32,System.String,System.Delegate,System.Object[])">
             <summary>
             This method registers a new listener to a certain event with certain parameters as a callback function
@@ -98,6 +108,23 @@
             Resets the instance at a certain depth level.
             </summary>
             <param name="depth">The depth of the layer.</param>
+        </member>
+        <member name="M:InterTalk.InterManagerCore.realReset(System.Int32,System.String)">
+            <summary>
+            Real reset method, after being filtered by the public mask.
+            </summary>
+            <param name="depth">The level of depth in the condition tree, if -1 it means any.</param>
+            <param name="condition">The condition for the level of depth, if String.Empty it means any.</param>
+        </member>
+        <member name="P:InterTalk.InterManagerCore.Instance">
+            <summary>
+            Instance of the singleton.
+            </summary>
+        </member>
+        <member name="P:InterTalk.InterManagerCore.IsInvoking">
+            <summary>
+            Value to check if the instance is invoking any condition or not.
+            </summary>
         </member>
     </members>
 </doc>
