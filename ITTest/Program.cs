@@ -1,21 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using InterTalk;
 using System.Diagnostics;
+using InterTalk;
 
 namespace ITTest
 {
-    class TestingClass
+    internal class TestingClass
     {
         public int value = 0;
     }
 
-    class Program
+    internal class Program
     {
         public int a = 0;
         public int b = 10000000;
+        public static int c = 11;
 
         private void AddToA()
         {
@@ -27,8 +25,13 @@ namespace ITTest
             b--;
         }
 
+        private void AddC()
+        {
+            int i = (int)InterManagerCore.Instance.MySafetyBox(0, "c");
+            c += i;
+        }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Stopwatch sw = new Stopwatch();
             InterManagerCore im = InterManagerCore.Instance;
@@ -42,6 +45,9 @@ namespace ITTest
                 im.Register(0, "a", new Action(p.AddToA), null);
                 im.Register(0, "b", new Action(p.TakeFromB), null);
             }
+
+            im.Register(0, "c", new Action(p.AddC), null);
+
             sw.Stop();
             Console.WriteLine("Registered in " + sw.Elapsed.Seconds + " seconds and " + sw.Elapsed.Milliseconds + " ms.");
 
@@ -50,8 +56,8 @@ namespace ITTest
             sw.Start();
             im.Invoke(0, "a", null, true);
             sw.Stop();
-            Console.WriteLine("With multithreading: " + sw.Elapsed.Seconds + " seconds and "+sw.Elapsed.Milliseconds+" ms.");
-            
+            Console.WriteLine("With multithreading: " + sw.Elapsed.Seconds + " seconds and " + sw.Elapsed.Milliseconds + " ms.");
+
             sw = new Stopwatch();
 
             sw.Start();
@@ -59,9 +65,10 @@ namespace ITTest
             sw.Stop();
             Console.WriteLine("With singlethreading: " + sw.Elapsed.Seconds + " seconds and " + sw.Elapsed.Milliseconds + " ms.");
 
-            Console.ReadKey();
+            im.Invoke(0, "c", 10, false);
+            Console.WriteLine(c);
 
+            Console.ReadKey();
         }
     }
 }
-

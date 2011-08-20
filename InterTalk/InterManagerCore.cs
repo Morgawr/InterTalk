@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace InterTalk
@@ -12,14 +10,13 @@ namespace InterTalk
     /// </summary>
     public sealed class InterManagerCore
     {
-
         #region Singleton Implementation
 
         private static readonly InterManagerCore instance = new InterManagerCore();
 
-        private InterManagerCore() 
+        private InterManagerCore()
         {
-            conditions = new List<Dictionary<string, List<Tuple<Delegate,object[]>>>>();
+            conditions = new List<Dictionary<string, List<Tuple<Delegate, object[]>>>>();
             safetyBox = new List<Dictionary<string, object>>();
             toRemove = new List<Tuple<int, string>>();
         }
@@ -35,15 +32,14 @@ namespace InterTalk
             }
         }
 
-        #endregion
+        #endregion Singleton Implementation
 
         #region Fields
-
 
         /// <summary>
         /// List that contains all the different conditions in different layers (for multi-purpose event handling)
         /// </summary>
-        private List<Dictionary<String, List<Tuple<Delegate,object[]>>>> conditions;
+        private List<Dictionary<String, List<Tuple<Delegate, object[]>>>> conditions;
 
         /// <summary>
         /// List that contains a "safety box" for the invoked methods to communicate some important data to the registered methods.
@@ -71,7 +67,7 @@ namespace InterTalk
             }
         }
 
-        #endregion
+        #endregion Fields
 
         #region Methods
 
@@ -85,22 +81,22 @@ namespace InterTalk
         /// <returns>Returns an int representing the ID of the registered listener. (Required to unregister a listener).</returns>
         public int Register(int depth, String condition, Delegate handler, params object[] args)
         {
-            Tuple<Delegate,object[]> tp = new Tuple<Delegate,object[]>(handler,args);
+            Tuple<Delegate, object[]> tp = new Tuple<Delegate, object[]>(handler, args);
 
             while (conditions.Count <= depth)
             {
-                conditions.Add(new Dictionary<String, List<Tuple<Delegate,object[]>>>());
+                conditions.Add(new Dictionary<String, List<Tuple<Delegate, object[]>>>());
                 safetyBox.Add(new Dictionary<string, object>());
             }
 
             if (!conditions[depth].ContainsKey(condition))
             {
-                conditions[depth][condition] = new List<Tuple<Delegate,object[]>>();
-                safetyBox[depth] = new Dictionary<string, object>();
+                conditions[depth].Add(condition, new List<Tuple<Delegate, object[]>>());
+                safetyBox[depth].Add(condition, null);
             }
 
             int id;
-            if((id = ObtainFirstNullID(depth,condition)) != -1)
+            if ((id = ObtainFirstNullID(depth, condition)) != -1)
             {
                 conditions[depth][condition][id] = tp;
             }
@@ -109,10 +105,9 @@ namespace InterTalk
                 conditions[depth][condition].Add(tp);
                 id = conditions[depth][condition].LastIndexOf(tp);
             }
-            
+
             return id;
         }
-
 
         /// <summary>
         /// Obtains the first null ID in the conditions list.
@@ -162,10 +157,9 @@ namespace InterTalk
                 {
                     if (tp != null)
                         tp.Item1.DynamicInvoke(tp.Item2);
-
                 }
             }
-            
+
             safetyBox[depth][condition] = null;
             isInvoking = false;
 
@@ -210,7 +204,6 @@ namespace InterTalk
         {
             return safetyBox[depth][condition];
         }
-
 
         /// <summary>
         /// Gets the number of registered methods to this event.
@@ -260,11 +253,11 @@ namespace InterTalk
         {
             if (depth >= conditions.Count)
                 return;
-            
-            if(IsInvoking)
-                toRemove.Add(new Tuple<int,string>(depth,String.Empty));
+
+            if (IsInvoking)
+                toRemove.Add(new Tuple<int, string>(depth, String.Empty));
             else
-                realReset(depth,String.Empty);
+                realReset(depth, String.Empty);
         }
 
         /// <summary>
@@ -292,6 +285,6 @@ namespace InterTalk
             safetyBox[depth][condition] = null;
         }
 
-        #endregion
+        #endregion Methods
     }
 }
